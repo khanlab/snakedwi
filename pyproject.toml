@@ -97,6 +97,39 @@ snakedwi snakedwi/test_data/bids_downsampled_1bzero_1scan test_out/synthsr parti
 rm -rf test_out/synthsr
 """ }
 
+test_reference_t1w = { cmd = """
+set -eu
+fixture=test_out/reference_t1w/bids
+source=snakedwi/test_data/bids_downsampled_1bzero_1scan
+mkdir -p "$fixture/sub-001/ses-dwi/anat" "$fixture/sub-001/ses-dwi/dwi" "$fixture/sub-001/ses-clinical/anat"
+cp "$source/dataset_description.json" "$fixture/"
+for file in "$source"/sub-001/dwi/*; do
+  name=${file##*/}
+  cp "$file" "$fixture/sub-001/ses-dwi/dwi/sub-001_ses-dwi_${name#sub-001_}"
+done
+cp "$source/sub-001/anat/sub-001_T1w.nii.gz" "$fixture/sub-001/ses-dwi/anat/sub-001_ses-dwi_T1w.nii.gz"
+cp "$source/sub-001/anat/sub-001_T1w.nii.gz" "$fixture/sub-001/ses-clinical/anat/sub-001_ses-clinical_T1w.nii.gz"
+
+snakedwi "$fixture" test_out/reference_default participant --sdc_method none -np
+snakedwi "$fixture" test_out/reference_alternate participant --sdc_method none --reference-t1w-session clinical -np > test_out/reference_t1w/alternate.log
+grep -q 'ses-clinical' test_out/reference_t1w/alternate.log
+snakedwi "$fixture" test_out/reference_native participant --sdc_method none --output-spaces dwi -np
+
+if snakedwi "$fixture" test_out/reference_missing participant --sdc_method none --reference-t1w-session absent -np > test_out/reference_t1w/missing.log 2>&1; then
+  echo "Expected a missing T1w reference session to fail" >&2
+  exit 1
+fi
+grep -q 'found 0' test_out/reference_t1w/missing.log
+
+cp "$source/sub-001/anat/sub-001_T1w.nii.gz" "$fixture/sub-001/ses-clinical/anat/sub-001_ses-clinical_acq-repeat_T1w.nii.gz"
+if snakedwi "$fixture" test_out/reference_ambiguous participant --sdc_method none --reference-t1w-session clinical -np > test_out/reference_t1w/ambiguous.log 2>&1; then
+  echo "Expected multiple T1w images in the selected session to fail" >&2
+  exit 1
+fi
+grep -q 'found 2' test_out/reference_t1w/ambiguous.log
+rm -rf test_out/reference_t1w test_out/reference_default test_out/reference_alternate test_out/reference_native test_out/reference_missing test_out/reference_ambiguous
+""" }
+
 
 
 # --- Meta tasks (run other tasks) ---
@@ -121,8 +154,8 @@ depends-on = [
   "test_singleshell_topup",
   "test_sdcflow",
   "test_synthsr",
+  "test_reference_t1w",
 ] 
 
 [tool.ruff]
 builtins = [ "snakemake" ]
-

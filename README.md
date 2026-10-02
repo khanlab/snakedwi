@@ -88,7 +88,8 @@ pixi run snakedwi /path/to/bids/dir /path/to/output/dir participant \
 The reference session must contain exactly one T1w image per selected subject. Without
 this option, snakedwi retains its existing T1w selection. The selected T1w is used
 throughout anatomical preprocessing and template/segmentation processing as well as
-DWI registration. The DWI session identity remains unchanged in output filenames.
+DWI registration. The DWI session identity remains unchanged in output filenames, so
+rerunning with another reference session replaces the standard outputs.
 
 ## Input Data Requirements
 
