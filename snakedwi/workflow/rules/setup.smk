@@ -18,6 +18,7 @@ from lib.check_subj_dwi_metadata import check_subj_dwi_metadata
 pybids_inputs_filtered = config["pybids_inputs"].copy()
 if "T1w" not in config.get("output_spaces", ["T1w"]):
     pybids_inputs_filtered.pop("T1w", None)
+    pybids_inputs_filtered.pop("T1w_reference", None)
 
 # writes inputs_config.yml and updates config dict
 inputs = generate_inputs(
@@ -76,6 +77,8 @@ subj_set_union = None  # union not really used except for finding set union - in
 subj_zip_list = None
 
 for bidsinput in pybids_inputs_filtered.keys():
+    if bidsinput == "T1w_reference":
+        continue
     zipl = inputs.input_zip_lists[bidsinput]
     if "session" in zipl:
         # has session, so we have to zip, then use set to remove duplicates

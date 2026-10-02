@@ -1,11 +1,37 @@
-# just grab the first T1w for now:
-rule import_t1:
-    input:
-        nii=lambda wildcards: expand(
+def get_t1_input(wildcards):
+    reference_session = config["reference_t1w_session"]
+    if reference_session is None:
+        candidates = expand(
             input_path["T1w"],
             zip,
             **filter_list(input_zip_lists["T1w"], wildcards),
-        )[0],
+        )
+        if not candidates:
+            raise ValueError(
+                f"No T1w image found for subject {wildcards.subject}"
+            )
+        return candidates[0]
+
+    reference_wildcards = {
+        "subject": wildcards.subject,
+        "session": reference_session,
+    }
+    candidates = expand(
+        input_path["T1w_reference"],
+        zip,
+        **filter_list(input_zip_lists["T1w_reference"], reference_wildcards),
+    )
+    if len(candidates) != 1:
+        raise ValueError(
+            f"Expected exactly one T1w image for subject {wildcards.subject} "
+            f"in session {reference_session}, found {len(candidates)}"
+        )
+    return candidates[0]
+
+
+rule import_t1:
+    input:
+        nii=get_t1_input,
     output:
         nii=bids(
             root=work,

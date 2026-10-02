@@ -69,6 +69,7 @@ pixi run snakedwi /path/to/bids/dir /path/to/output/dir participant --use-apptai
 - `--participant_label`: Process specific subject(s), e.g., `--participant_label 001 002`
 - `--sdc_method`: Choose susceptibility distortion correction method (`optimal`, `topup`, `synthsr`, `sdcflow`, `synb0`, `none`)
 - `--masking_method`: Brain masking method (`b0_BET`, `b0_SyN`, `b0_synthstrip`)
+- `--reference-t1w-session`: Use the T1w from the specified BIDS session as the anatomical reference (also used by DWI-to-T1w registration); omitted by default.
 - `--cores`: Number of cores to use (e.g., `--cores 8` or `--cores all`)
 - `-np`: Dry-run mode (show what will be executed without running)
 
@@ -78,10 +79,16 @@ pixi run snakedwi /path/to/bids/dir /path/to/output/dir participant --use-apptai
 pixi run snakedwi /path/to/bids/dir /path/to/output/dir participant \
   --use-apptainer \
   --participant_label 001 \
+  --reference-t1w-session clinical \
   --sdc_method topup \
   --masking_method b0_synthstrip \
   --cores 8
 ```
+
+The reference session must contain exactly one T1w image per selected subject. Without
+this option, snakedwi retains its existing T1w selection. The selected T1w is used
+throughout anatomical preprocessing and template/segmentation processing as well as
+DWI registration. The DWI session identity remains unchanged in output filenames.
 
 ## Input Data Requirements
 

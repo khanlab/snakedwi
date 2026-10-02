@@ -42,6 +42,18 @@ pybids_inputs:
       - acquisition
       - run
 
+  T1w_reference:
+    filters:
+      suffix: 'T1w'
+      extension: '.nii.gz'
+      datatype: 'anat'
+      invalid_filters: 'allow'
+    wildcards:
+      - subject
+      - session
+      - acquisition
+      - run
+
    
 
 #these are the command-line parameters
@@ -87,6 +99,13 @@ parse_args:
       - 'T1w'
       - 'dwi'
     default: ['T1w']
+
+  --reference-t1w-session:
+    help: 'BIDS session label for the T1w reference image. If omitted, the workflow
+          uses the existing T1w selection. The selected image is used throughout
+          the anatomical reference and DWI registration workflow. (default: %(default)s)'
+    dest: reference_t1w_session
+    default: null
 
   --skip_denoise:
     help: 'Skip the denoising step of the workflow. By default, denoising is 
